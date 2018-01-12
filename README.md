@@ -1,23 +1,23 @@
 Lighthouse
 ==========
 
-### Please note: this project is no longer maintained.
+Lighthouse is a bitcoin cash compatible fork of Mike Hearn's [Lighthouse project](https://github.com/vinumeris/lighthouse) 
 
-Lighthouse is a decentralised, peer to peer crowdfunding application that uses the smart contracts features of the
+
+It is a decentralised, peer to peer crowdfunding application that uses the smart contracts features of the
 Bitcoin protocol. It lets you create projects and pledge to those projects.
 
-# get involved
+# project status - WIP
 
-Mailing lists:
+Currently the project is a work in progress and not yet fully functional.  It currently builds with a bit of tweaking and it is possible to
+create and complete projects using the client.  Currently a fully funded project cannot be broadcast to the network as there is no lighthouse 
+server running.  We hope to have this service up and running ASAP.
 
-* [User discussion and questions](https://groups.google.com/forum/#!forum/lighthouse-discuss)
-* [Development talk](https://groups.google.com/forum/#!forum/lighthouse-dev)
+This is project is now considered maintained again. However it was primarily updated as a proof of concept for it's main dependency
+[bitcoinj.cash](http://bitcoinj.cash) and as such no significant new development is currently planned beyond building a deploying a
+working lighthouse server.
+If you would like to contribute to the project please get in touch on the bitcoinj.cash [mailing list](https://groups.google.com/forum/#!forum/bitcoinj-cash)
 
-Or sign up for occasional email newsletters on [vinumeris.com](https://www.vinumeris.com).
-
-You can chat to us in the #lighthouse chatroom on [Freenode IRC](http://webchat.freenode.net/).
-
-If you're a developer, build instructions are at the end of this README.
 
 # how to tweak the user interface
 
@@ -52,22 +52,23 @@ please invent a new name and logo for it first. Thanks.
 
 # building from source
 
-Building Lighthouse from source requires the [Maven](http://maven.apache.org/) build tool and the [org.bitcoinj](http://org.bitcoinj.github.io/) library.
-
-The latest version of org.bitcoinj should be [installed from source](https://github.com/org.bitcoinj/org.bitcoinj):
-
-```
-$ git clone https://github.com/org.bitcoinj/org.bitcoinj
-$ cd org.bitcoinj
-$ mvn clean install
-```
+Building Lighthouse from source requires the [Maven](http://maven.apache.org/) build tool and the [bitcoinj.cash](http://bitcoinj.cash/) library.
 
 Compile Lighthouse with:
 
 ```
-$ git clone https://github.com/vinumeris/lighthouse
+$ https://github.com/bitcoinj-cash/lighthouse
 $ cd lighthouse
 $ mvn clean package
+```
+This will pull the latest version of bitcoinj.cash as a dependency from the Maven central repo.
+
+Alternatively the latest version of bitcoinj.cash can be [installed from source](https://github.com/bitcoinj-cash/bitcoinj):
+
+```
+$ git clone https://github.com/bitcoinj-cash/bitcoinj
+$ cd bitcoinj-cash
+$ mvn clean install
 ```
 
 Run Lighthouse with:
