@@ -74,7 +74,7 @@ public class PledgeServer {
             log.error("This server is already running");
             return;
         } catch (Exception e) {
-            log.error("Failed to start bitcoinj", e);
+            log.error("Failed to start org.bitcoinj", e);
             return;
         }
         writePidFile(appDir, pidFileFlag.value(options));

@@ -26,7 +26,7 @@ public object DirectoryWatcher {
 
     @Suppress("UNCHECKED_CAST") @JvmStatic
     public fun watch(directory: Path, executor: AffinityExecutor.ServiceAffinityExecutor, onChanged: (Path, WatchEvent.Kind<Path>) -> Unit): Thread {
-        return thread(start = true, daemon = true, name = "Directory watcher for $directory") {
+        return thread(start = true, isDaemon = true, name = "Directory watcher for $directory") {
             log.info("Starting directory watch service for $directory")
 
             // Apply a short delay to collapse rapid sequences of notifications together.

@@ -52,13 +52,13 @@ please invent a new name and logo for it first. Thanks.
 
 # building from source
 
-Building Lighthouse from source requires the [Maven](http://maven.apache.org/) build tool and the [bitcoinj](http://bitcoinj.github.io/) library.
+Building Lighthouse from source requires the [Maven](http://maven.apache.org/) build tool and the [org.bitcoinj](http://org.bitcoinj.github.io/) library.
 
-The latest version of bitcoinj should be [installed from source](https://github.com/bitcoinj/bitcoinj):
+The latest version of org.bitcoinj should be [installed from source](https://github.com/org.bitcoinj/org.bitcoinj):
 
 ```
-$ git clone https://github.com/bitcoinj/bitcoinj
-$ cd bitcoinj
+$ git clone https://github.com/org.bitcoinj/org.bitcoinj
+$ cd org.bitcoinj
 $ mvn clean install
 ```
 

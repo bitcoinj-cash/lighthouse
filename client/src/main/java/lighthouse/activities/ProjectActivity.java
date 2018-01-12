@@ -29,6 +29,7 @@ import lighthouse.subwindows.*;
 import lighthouse.threading.*;
 import lighthouse.utils.*;
 import org.bitcoinj.core.*;
+import org.bitcoinj.wallet.*;
 import org.bitcoinj.params.*;
 import org.slf4j.*;
 

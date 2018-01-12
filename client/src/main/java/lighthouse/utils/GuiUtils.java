@@ -60,7 +60,7 @@ public class GuiUtils {
     }
 
     public static void informationalAlert(String message, String details, Object... args) {
-        String formattedDetails = String.format(details, args);
+        String formattedDetails = details == null ? "null details" : String.format(details, args);
         Runnable r = () -> runAlert((stage, controller) -> controller.informational(stage, message, formattedDetails));
         if (Platform.isFxApplicationThread())
             r.run();

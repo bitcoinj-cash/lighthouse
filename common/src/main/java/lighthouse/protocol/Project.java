@@ -196,7 +196,7 @@ public class Project {
     @Nullable
     public URI getPaymentURL() {
         if (url != null && "localhost".equals(url.getHost())) {
-            // Switch port for easier local testing (vs the default of port 80).
+            // Switch port for easier local org.bitcoinj.testing (vs the default of port 80).
             URI newUrl = unchecked(() -> new URI(String.format("http://%s:%d%s", url.getHost(), LHUtils.HTTP_LOCAL_TEST_PORT, url.getPath())));
             log.info("Switched URL to {}", newUrl);
             return newUrl;
@@ -284,7 +284,7 @@ public class Project {
         }
     }
 
-    // TODO: Move this into bitcoinj post-0.12
+    // TODO: Move this into org.bitcoinj post-0.12
     private DefaultRiskAnalysis.RuleViolation isInputStandard(TransactionInput input, Script scriptPubKey) {
         DefaultRiskAnalysis.RuleViolation violation = input.isStandard();
         if (violation != DefaultRiskAnalysis.RuleViolation.NONE)

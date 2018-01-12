@@ -5,13 +5,12 @@ import com.google.common.util.concurrent.*;
 import kotlin.*;
 import lighthouse.protocol.*;
 import org.bitcoinj.core.*;
-import org.bitcoinj.core.listeners.*;
 import org.bitcoinj.params.*;
-import org.bitcoinj.store.*;
-import org.bitcoinj.testing.*;
 import org.bitcoinj.utils.*;
 import org.bitcoinj.wallet.*;
+import org.bitcoinj.wallet.listeners.*;
 import org.junit.*;
+import org.bitcoinj.testing.MockTransactionBroadcaster;
 
 import java.io.*;
 import java.util.*;

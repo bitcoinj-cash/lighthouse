@@ -10,6 +10,7 @@ import lighthouse.protocol.*;
 import lighthouse.utils.*;
 import lighthouse.wallet.*;
 import org.bitcoinj.core.*;
+import org.bitcoinj.wallet.*;
 import org.slf4j.*;
 import org.spongycastle.crypto.params.*;
 

@@ -51,9 +51,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.bitcoinj</groupId>
+            <groupId>cash.bitcoinj</groupId>
             <artifactId>bitcoinj-core</artifactId>
-            <version>0.14-SNAPSHOT</version>
+            <version>0.14.5</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -73,8 +73,8 @@
     </dependencies>
 
     <modules>
-        <module>client</module>
         <module>common</module>
+        <module>client</module>
         <module>server</module>
     </modules>
 </project>

@@ -30,8 +30,10 @@ import nl.komponents.kovenant.jvm.asDispatcher
 import org.bitcoinj.core.*
 import org.bitcoinj.core.listeners.AbstractBlockChainListener
 import org.bitcoinj.core.listeners.OnTransactionBroadcastListener
-import org.bitcoinj.core.listeners.WalletCoinEventListener
 import org.bitcoinj.params.RegTestParams
+import org.bitcoinj.wallet.Wallet
+import org.bitcoinj.wallet.listeners.WalletCoinsSentEventListener
+import org.bitcoinj.wallet.listeners.WalletCoinsReceivedEventListener
 import org.slf4j.LoggerFactory
 import org.spongycastle.crypto.params.KeyParameter
 import java.io.File
@@ -47,6 +49,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
+import kotlin.collections.ArrayList
 
 /**
  * LighthouseBackend is a bit actor-ish: it uses its own thread which owns almost all internal state. Other
@@ -170,23 +173,33 @@ public class LighthouseBackend public constructor(
                             log.error("Found a pledge in the wallet but could not find the corresponding project: {}", pledge.projectID)
                         }
                     }
+
                     // Make sure we can spot projects being claimed.
-                    wallet.addCoinEventListener(executor, object : WalletCoinEventListener {
+                    val sentListener = object: WalletCoinsSentEventListener {
                         override fun onCoinsSent(wallet: Wallet, tx: Transaction, prevBalance: Coin, newBalance: Coin) {
                         }
+                    }
+                    wallet.addCoinsSentEventListener(executor, sentListener)
 
+                    val recieveListener = object: WalletCoinsReceivedEventListener {
                         override fun onCoinsReceived(wallet: Wallet, tx: Transaction, prevBalance: Coin, newBalance: Coin) {
                             checkPossibleClaimTX(tx)
                         }
-
-                    })
-
-                    for (tx in wallet.getTransactions(false)) {
-                        if (tx.outputs.size != 1) continue    // Optimization: short-circuit: not a claim.
-                        val project = getProjectFromClaim(tx) ?: continue
-                        log.info("Loading stored claim ${tx.hash} for $project")
-                        addClaimConfidenceListener(executor, tx, project)
                     }
+                    wallet.addCoinsReceivedEventListener(executor, recieveListener)
+
+
+//
+//                    wallet.addCoinEventListener(executor, object : AbstractWalletEventListener() {
+//                        override fun onCoinsSent(wallet: Wallet, tx: Transaction, prevBalance: Coin, newBalance: Coin) {
+//                        }
+//
+//                        override fun onCoinsReceived(wallet: Wallet, tx: Transaction, prevBalance: Coin, newBalance: Coin) {
+//                            checkPossibleClaimTX(tx)
+//                        }
+//
+//                    })
+
 
                     // Let us find revocations by using a direct Bloom filter provider. We could watch out for claims in this
                     // way too, but we want the wallet to monitor confidence of claims, and don't care about revocations as much.
@@ -244,7 +257,7 @@ public class LighthouseBackend public constructor(
 
     private fun loadProjectFiles(appdir: File) {
         appdir.listFiles {
-            it.toString().endsWith(PROJECT_FILE_EXTENSION) && it.isFile
+            file -> file.toString().endsWith(PROJECT_FILE_EXTENSION) && file.isFile
         }?.map {
             tryLoadProject(it)
         }?.filterNotNull()?.forEach { project ->
@@ -261,7 +274,7 @@ public class LighthouseBackend public constructor(
         projectStates[project.hash] = ProjectStateInfo(ProjectState.OPEN, null)
         // Ensure we can look up a Project when we receive an HTTP request.
         if (project.isServerAssisted && mode == Mode.SERVER)
-            projectsByUrlPath[project.paymentURL.path] = project
+            projectsByUrlPath[project.paymentURL!!.path] = project
         projectsMap[project.hash] = project
         configureWalletToSpotClaimsFor(project)
     }
@@ -300,7 +313,7 @@ public class LighthouseBackend public constructor(
 
     private fun loadPledges(appdir: File) {
         appdir.listFiles {
-            it.toString().endsWith(PLEDGE_FILE_EXTENSION)
+            file -> file.toString().endsWith(PLEDGE_FILE_EXTENSION)
         }?.map {
             tryLoadPledge(it)
         }?.filterNotNull()?.forEach {
@@ -376,7 +389,7 @@ public class LighthouseBackend public constructor(
         val type = conf.confidenceType!!
         if (type == TransactionConfidence.ConfidenceType.PENDING) {
             val seenBy = conf.numBroadcastPeers()
-            // This logic taken from bitcoinj's TransactionBroadcast class.
+            // This logic taken from org.bitcoinj's TransactionBroadcast class.
             val numConnected = bitcoin.peers.connectedPeers.size
             val numToBroadcastTo = Math.max(1, Math.round(Math.ceil(numConnected / 2.0))).toInt()
             val numWaitingFor = Math.ceil((numConnected - numToBroadcastTo) / 2.0).toInt()
@@ -420,7 +433,7 @@ public class LighthouseBackend public constructor(
         // things like watch out for double spends and track chain depth.
         val scripts = project.outputs.map { it.scriptPubKey }
         scripts.forEach { it.creationTimeSeconds = project.protoDetails.time }
-        val toAdd = scripts.toArrayList()
+        val toAdd = ArrayList(scripts)
 
         toAdd.removeAll(bitcoin.wallet.watchedScripts)
         if (toAdd.isNotEmpty())
@@ -488,13 +501,13 @@ public class LighthouseBackend public constructor(
                     for (peer in bitcoin.xtPeers.connectedPeers) log.info("Connected to: {}", peer)
                 }
                 Futures.addCallback(peerFuture, object : FutureCallback<List<Peer>> {
-                    override fun onSuccess(allPeers: List<Peer>) {
+                    override fun onSuccess(allPeers: List<Peer>?) {
                         log.info("Peers available: {}", allPeers)
                         executor.checkOnThread()
                         // Do a fast delete of any peers that claim they don't support NODE_GETUTXOS. We ensure we always
                         // find nodes that support it elsewhere.
-                        val origSize = allPeers.size
-                        val xtPeers = allPeers.filter { it.peerVersionMessage.isGetUTXOsSupported }
+                        val origSize = allPeers!!.size
+                        val xtPeers = allPeers!!.filter { it.peerVersionMessage.isGetUTXOsSupported }
                         if (xtPeers.isEmpty()) {
                             val ex = Exception("No nodes of high enough version advertised NODE_GETUTXOS")
                             log.error(ex.message)
@@ -730,9 +743,9 @@ public class LighthouseBackend public constructor(
             if (mode == Mode.SERVER) {
                 // Ensure we can look up a Project when we receive an HTTP request.
                 if (old.isServerAssisted)
-                    projectsByUrlPath.remove(old.paymentURL.path)
+                    projectsByUrlPath.remove(old.paymentURL!!.path)
                 if (new.isServerAssisted)
-                    projectsByUrlPath[new.paymentURL.path] = new
+                    projectsByUrlPath[new.paymentURL!!.path] = new
             }
             projectsMap.remove(old.hash)
             projectsMap[new.hash] = new

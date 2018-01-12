@@ -262,7 +262,7 @@ public class MarkDownNode : VBox() {
         // LISTS
         //
 
-        private var listCounter = linkedListOf<Int>();  // 0 == bullet, >0 == number
+        private var listCounter = LinkedList(listOf<Int>());  // 0 == bullet, >0 == number
         override fun visit(node: BulletListNode) {
             createAndDescend(node, nodeWithStyles<VBox>("md-p")) {
                 listCounter.push(0)

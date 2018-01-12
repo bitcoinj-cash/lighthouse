@@ -7,6 +7,7 @@ import javafx.scene.control.ScrollPane
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.StackPane
 import lighthouse.Main
+import java.util.*
 
 /**
  * A NavManager keeps track of a browser-style navigation experience, with a history list that keeps track of where
@@ -15,7 +16,7 @@ import lighthouse.Main
 public class NavManager(public val scrollPane: ScrollPane, val initial: Activity) {
     // Stores information needed to go back one step.
     inner class HistoryItem(val scroll: Double, val activity: Activity, val asNode: Node)
-    private val history = linkedListOf<HistoryItem>()
+    private val history = LinkedList(listOf<HistoryItem>())
     public var currentActivity: Activity = initial
         get
         private set
@@ -58,7 +59,8 @@ public class NavManager(public val scrollPane: ScrollPane, val initial: Activity
         currentActivity.onStop()
         with (stackPane.children) {
             // TODO: Animate this
-            removeRaw(currentActivity)
+            //removeRaw(currentActivity)
+            remove(currentActivity as Node)
             add(prev.asNode)
         }
         scrollPane.vvalue = prev.scroll

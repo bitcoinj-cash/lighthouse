@@ -254,9 +254,9 @@ public class Main extends Application {
                             "  --slow-gfx:                     Enable more eyecandy that may stutter on slow GFX cards\n" +
                             "  --net={regtest,main,test}:      Select Bitcoin network to operate on.\n" +
                             "  --connect=ipaddr,ipaddr         Uses the given IP addresses for REGULAR (non-XT) Bitcoin usage.\n" +
-                            "  --name=alice                    Name is put in titlebar and pledge filenames, useful for testing\n" +
+                            "  --name=alice                    Name is put in titlebar and pledge filenames, useful for org.bitcoinj.testing\n" +
                             "                                  multiple instances on the same machine.\n" +
-                            "  --appdir=/path/to/dir           Overrides the usual directory used, useful for testing multiple\n" +
+                            "  --appdir=/path/to/dir           Overrides the usual directory used, useful for org.bitcoinj.testing multiple\n" +
                             "                                  instances on the same machine.\n" +
                             "  --debuglog                      Print logging data to the console.\n" +
                             "  --updates-url=http://xxx/       Override the default URL used for updates checking.\n" +
@@ -423,7 +423,7 @@ public class Main extends Application {
     }
 
     public boolean initBitcoin() {
-        // Tell bitcoinj to run event handlers on the JavaFX UI thread. This keeps things simple and means
+        // Tell org.bitcoinj to run event handlers on the JavaFX UI thread. This keeps things simple and means
         // we cannot forget to switch threads when adding event handlers. Unfortunately, the DownloadListener
         // we give to the app kit is currently an exception and runs on a library thread. It'll get fixed in
         // a future version.

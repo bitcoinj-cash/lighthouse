@@ -347,7 +347,7 @@ It's important to note the following things about them:
 
 ### Pledging wallet
 
-The `PledgingWallet` class extends the standard bitcoinj `Wallet` class with new functionality needed for creating
+The `PledgingWallet` class extends the standard org.bitcoinj `Wallet` class with new functionality needed for creating
 and revoking pledges. A wallet extension is registered which stores pledges created by the wallet and the projects they
 were created for. Note that pledges are stored even after being revoked, although in such a way that we know about the
 revocation. This is important because even though a revoked pledge may become invisible in the UI (at least today),
@@ -394,7 +394,7 @@ of the Bitcoin community. It features:
 
  * Binary delta updates that can be downloaded and applied to the app whilst it's running.
  * Threshold signing using Bitcoin-compatible secp256k1 keys, that reuses the Bitcoin message signing
-   standard (although UpdateFX does not depend on bitcoinj). This means a group of developers can require agreement
+   standard (although UpdateFX does not depend on org.bitcoinj). This means a group of developers can require agreement
    amongst themselves in order to push updates, and their signing keys can be protected in any way a regular Bitcoin
    key can be.
  * No administrator access required to apply updates. New versions of the app jar are stored in the apps private data

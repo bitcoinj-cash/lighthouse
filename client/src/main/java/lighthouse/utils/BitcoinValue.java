@@ -4,7 +4,7 @@ import org.bitcoinj.core.*;
 
 import java.math.*;
 
-// TODO: Move this into bitcoinj
+// TODO: Move this into org.bitcoinj
 
 public class BitcoinValue {
     // Takes user input in bitcoins and yields either a value in satoshis or a NumberFormatException if out of range.

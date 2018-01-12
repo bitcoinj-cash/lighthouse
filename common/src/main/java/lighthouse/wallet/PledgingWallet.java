@@ -281,7 +281,7 @@ public class PledgingWallet extends Wallet {
             req.aesKey = aesKey;
             completeTx(req);
             dependency = req.tx;
-            totalFees = req.fee;
+            totalFees = req.tx.getFee();
             log.info("Created dependency tx {}", dependency.getHash());
             // The change is in a random output position so we have to search for it. It's possible that there are
             // two outputs of the same size, in that case it doesn't matter which we use.
@@ -440,7 +440,7 @@ public class PledgingWallet extends Wallet {
         final Coin feeSize = Transaction.REFERENCE_DEFAULT_MIN_TX_FEE.multiply(2);
         log.info("Completing contract with fee: sending dependency tx");
         Transaction contract = project.completeContract(pledges);
-        Wallet.SendRequest request = Wallet.SendRequest.to(freshReceiveKey().toAddress(params), feeSize);
+        SendRequest request = SendRequest.to(freshReceiveKey().toAddress(params), feeSize);
         request.aesKey = aesKey;
         Wallet.SendResult result = sendCoins(vTransactionBroadcaster, request);
 
@@ -465,7 +465,7 @@ public class PledgingWallet extends Wallet {
         Futures.addCallback(result.broadcastComplete, new FutureCallback<Transaction>() {
                 @Override
                 public void onSuccess(@Nullable Transaction tx) {
-                    // Runs on a bitcoinj thread when the dependency was broadcast.
+                    // Runs on a org.bitcoinj thread when the dependency was broadcast.
                     // Find the right output size and add it as a regular input (that covers the rest).
                     log.info("Dependency broadcast complete");
                     TransactionOutput feeOut = tx.getOutputs().stream()

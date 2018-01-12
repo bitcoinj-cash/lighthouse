@@ -1,4 +1,4 @@
-This outlines a simple manual testing matrix. It is not fully fleshed out and only verifies the basic functionality
+This outlines a simple manual org.bitcoinj.testing matrix. It is not fully fleshed out and only verifies the basic functionality
 works. At some point we should use TestFX to automate all of this, but currently TestFX seems a little immature 
 (not great docs, etc).
 

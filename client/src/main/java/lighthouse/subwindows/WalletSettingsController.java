@@ -153,7 +153,7 @@ public class WalletSettingsController {
 
         long birthday = datePicker.getValue().atStartOfDay().toEpochSecond(ZoneOffset.UTC);
         DeterministicSeed seed = new DeterministicSeed(Splitter.on(' ').splitToList(wordsArea.getText()), null, "", birthday);
-        // Shut down bitcoinj and restart it with the new seed.
+        // Shut down org.bitcoinj and restart it with the new seed.
         Main.bitcoin.restoreFromSeed(seed);
         MainWindow.bitcoinUIModel.setWallet(Main.bitcoin.getWallet());
     }

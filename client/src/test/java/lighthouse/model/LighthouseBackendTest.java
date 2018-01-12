@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.*;
 import static java.net.HttpURLConnection.*;
 import static lighthouse.LighthouseBackend.Mode.*;
 import static lighthouse.protocol.LHUtils.*;
-import static org.bitcoinj.testing.FakeTxBuilder.*;
 import static org.junit.Assert.*;
 
 public class LighthouseBackendTest extends TestWithPeerGroup {
@@ -61,8 +60,8 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
     @Override
     @Before
     public void setUp() throws Exception {
-        Context context = new Context(params);
-        pledgingWallet = new PledgingWallet(params) {
+        Context context = new Context(PARAMS);
+        pledgingWallet = new PledgingWallet(PARAMS) {
             @Nullable
             @Override
             public LHProtos.Pledge getPledgeFor(Project project) {
@@ -98,14 +97,14 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
         });
 
         projectModel = new ProjectModel(pledgingWallet);
-        to = new ECKey().toAddress(params);
+        to = new ECKey().toAddress(PARAMS);
         projectModel.address.set(to.toString());
         projectModel.title.set("Foo");
         projectModel.memo.set("Bar");
         projectModel.goalAmount.set(Coin.COIN.value);
         project = projectModel.getProject();
 
-        supportingVer = new VersionMessage(params, 1);
+        supportingVer = new VersionMessage(PARAMS, 1);
         supportingVer.localServices = VersionMessage.NODE_NETWORK | VersionMessage.NODE_GETUTXOS;
         supportingVer.clientVersion = GetUTXOsMessage.MIN_PROTOCOL_VERSION;
 
@@ -152,7 +151,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
             }
         };
 
-        backend = new LighthouseBackend(client, params, mockBitcoinBackend, executor);
+        backend = new LighthouseBackend(client, PARAMS, mockBitcoinBackend, executor);
         backend.setMinPeersForUTXOQuery(1);
         backend.setMaxJitterSeconds(0);
         backend.start();
@@ -307,7 +306,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
         // it knows they are the same and doesn't duplicate.
         projectModel.serverName.set("localhost");
         project = projectModel.getProject();
-        Transaction tx = FakeTxBuilder.createFakeTx(params, Coin.COIN, new ECKey());
+        Transaction tx = FakeTxBuilder.createFakeTx(PARAMS, Coin.COIN, new ECKey());
         final LHProtos.Pledge pledge = LHProtos.Pledge.newBuilder()
                 .addTransactions(ByteString.copyFrom(tx.bitcoinSerialize()))
                 .setPledgeDetails(LHProtos.PledgeDetails.newBuilder()
@@ -328,7 +327,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
         executor.service.awaitTermination(5, TimeUnit.SECONDS);
         executor = new AffinityExecutor.ServiceAffinityExecutor("test thread 2");
         writeProjectToDisk();
-        backend = new LighthouseBackend(CLIENT, params, mockBitcoinBackend, executor);
+        backend = new LighthouseBackend(CLIENT, PARAMS, mockBitcoinBackend, executor);
         backend.start();
 
         // Let's watch out for pledges from the server.
@@ -387,7 +386,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
         assertEquals(pledgeTx.getInput(0).getOutpoint(), getutxos.getOutPoints().get(0));
 
         // We reply with the data it expects.
-        inbound(p2, new UTXOsMessage(params,
+        inbound(p2, new UTXOsMessage(PARAMS,
                 ImmutableList.of(stubTx.getOutput(0)),
                 new long[]{UTXOsMessage.MEMPOOL_HEIGHT},
                 blockStore.getChainHead().getHeader().getHash(),
@@ -415,9 +414,9 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
         assertEquals(Coin.COIN.value / 2, pledge2.getPledgeDetails().getTotalInputValue());
 
         // New block: let's pretend this block contains a revocation transaction. LighthouseBackend should recheck.
-        Transaction revocation = new Transaction(params);
+        Transaction revocation = new Transaction(PARAMS);
         revocation.addInput(stubTx.getOutput(0));
-        revocation.addOutput(stubTx.getOutput(0).getValue(), new ECKey().toAddress(params));
+        revocation.addOutput(stubTx.getOutput(0).getValue(), new ECKey().toAddress(PARAMS));
         Block newBlock = FakeTxBuilder.makeSolvedTestBlock(blockChain.getChainHead().getHeader(), revocation);
         FilteredBlock filteredBlock = filter.applyAndUpdate(newBlock);
         inbound(p1, filteredBlock);
@@ -476,12 +475,12 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
         assertEquals(pledgeTx.getInput(0).getOutpoint(), getutxos1.getOutPoints().get(0));
 
         // Two peers reply with the data it expects, one replies with a lie (claiming unspent when really spent).
-        UTXOsMessage lie = new UTXOsMessage(params,
+        UTXOsMessage lie = new UTXOsMessage(PARAMS,
                 ImmutableList.of(stubTx.getOutput(0)),
                 new long[]{UTXOsMessage.MEMPOOL_HEIGHT},
                 blockStore.getChainHead().getHeader().getHash(),
                 blockStore.getChainHead().getHeight());
-        UTXOsMessage correct = new UTXOsMessage(params,
+        UTXOsMessage correct = new UTXOsMessage(PARAMS,
                 ImmutableList.of(),
                 new long[]{},
                 blockStore.getChainHead().getHeader().getHash(),
@@ -522,8 +521,8 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
         // Is now loaded from disk.
         assertEquals(1, projects.size());
 
-        Transaction payment = FakeTxBuilder.createFakeTx(params, Coin.COIN, pledgingWallet.currentReceiveAddress());
-        FakeTxBuilder.BlockPair bp = createFakeBlock(blockStore, payment);
+        Transaction payment = FakeTxBuilder.createFakeTx(PARAMS, Coin.COIN, pledgingWallet.currentReceiveAddress());
+        FakeTxBuilder.BlockPair bp = FakeTxBuilder.createFakeBlock(blockStore, payment);
         wallet.receiveFromBlock(payment, bp.storedBlock, AbstractBlockChain.NewBlockType.BEST_CHAIN, 0);
         wallet.notifyNewBestBlock(bp.storedBlock);
         PledgingWallet.PendingPledge pendingPledge = pledgingWallet.createPledge(project, Coin.COIN.value, null);
@@ -565,7 +564,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
 
         // The dependency TX doesn't really have to be a dependency at the moment, it could be anything so we lazily
         // just make an unrelated fake tx to check the ordering of things.
-        Transaction depTx = FakeTxBuilder.createFakeTx(params, Coin.COIN, wallet.currentReceiveAddress());
+        Transaction depTx = FakeTxBuilder.createFakeTx(PARAMS, Coin.COIN, wallet.currentReceiveAddress());
         pledge = pledge.toBuilder().setTransactions(0, ByteString.copyFrom(depTx.bitcoinSerialize()))
                 .addTransactions(ByteString.copyFrom(pledgeTx.bitcoinSerialize()))
                 .build();
@@ -581,7 +580,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
         Transaction broadcast = (Transaction) waitForOutbound(p1);
         assertEquals(depTx, broadcast);
         assertNull(outbound(p2));
-        InventoryMessage inv = new InventoryMessage(params);
+        InventoryMessage inv = new InventoryMessage(PARAMS);
         inv.addTransaction(depTx);
         inbound(p2, inv);
         // Broadcast is now complete, so query.
@@ -632,7 +631,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
 
         // The dependency TX doesn't really have to be a dependency at the moment, it could be anything so we lazily
         // just make an unrelated fake tx to check the ordering of things.
-        Transaction depTx = FakeTxBuilder.createFakeTx(params, Coin.COIN, wallet.currentReceiveAddress());
+        Transaction depTx = FakeTxBuilder.createFakeTx(PARAMS, Coin.COIN, wallet.currentReceiveAddress());
         pledge = pledge.toBuilder().setTransactions(0, ByteString.copyFrom(depTx.bitcoinSerialize()))
                 .addTransactions(ByteString.copyFrom(pledgeTx.bitcoinSerialize()))
                 .build();
@@ -645,7 +644,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
         Transaction broadcast = (Transaction) waitForOutbound(p1);
         assertEquals(depTx, broadcast);
         assertNull(outbound(p2));
-        InventoryMessage inv = new InventoryMessage(params);
+        InventoryMessage inv = new InventoryMessage(PARAMS);
         inv.addTransaction(depTx);
         inbound(p2, inv);
         // Broadcast is now complete, so query.
@@ -677,7 +676,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
         // spots the claim and understands the current state of the project.
         initCoreState(CLIENT);
         peerGroup.setMinBroadcastConnections(2);
-        peerGroup.setDownloadTxDependencies(false);
+        peerGroup.setDownloadTxDependencies(Integer.MAX_VALUE);
 
         writeProjectToDisk();
 
@@ -764,7 +763,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
 
         peerGroup.setMinBroadcastConnections(2);
 
-        Transaction doubleSpentTx = new Transaction(params);
+        Transaction doubleSpentTx = new Transaction(PARAMS);
         doubleSpentTx.addInput(TestUtils.makeRandomInput());
 
         // Make a key that doesn't use deterministic signing, to make it easy for us to double spend with bitwise
@@ -779,7 +778,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
                 return new ECDSASignature(components[0], components[1]).toCanonicalised();
             }
         };
-        TransactionOutput output = doubleSpentTx.addOutput(Coin.COIN.divide(2), signingKey.toAddress(params));
+        TransactionOutput output = doubleSpentTx.addOutput(Coin.COIN.divide(2), signingKey.toAddress(PARAMS));
 
         LHProtos.Pledge.Builder pledge1 = makeSimpleHalfPledge(signingKey, output);
         LHProtos.Pledge.Builder pledge2 = makeSimpleHalfPledge(signingKey, output);
@@ -879,7 +878,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
 
     private LHProtos.Pledge.Builder makeSimpleHalfPledge(ECKey signingKey, TransactionOutput output) {
         LHProtos.Pledge.Builder pledge = LHProtos.Pledge.newBuilder();
-        Transaction tx = new Transaction(params);
+        Transaction tx = new Transaction(PARAMS);
         tx.addOutput(project.getOutputs().get(0));   // Project output.
         tx.addSignedInput(output, signingKey, Transaction.SigHash.ALL, true);
         pledge.addTransactions(ByteString.copyFrom(tx.bitcoinSerialize()));
@@ -892,7 +891,7 @@ public class LighthouseBackendTest extends TestWithPeerGroup {
     private void doGetUTXOAnswer(InboundMessageQueuer p, TransactionOutput... outputs) throws InterruptedException, BlockStoreException {
         long[] heights = new long[outputs.length];
         Arrays.fill(heights, UTXOsMessage.MEMPOOL_HEIGHT);
-        inbound(p, new UTXOsMessage(params,
+        inbound(p, new UTXOsMessage(PARAMS,
                 Lists.newArrayList(outputs),
                 heights,
                 blockStore.getChainHead().getHeader().getHash(),

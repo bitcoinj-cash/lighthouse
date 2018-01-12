@@ -48,7 +48,7 @@ public class OnlineUpdateChecks(val onStateChanged: (UpdateState, OnlineUpdateCh
                 UpdateFX.findCodePath(Main::class.java), Main.UPDATE_SIGNING_KEYS, Main.UPDATE_SIGNING_THRESHOLD)
 
         if (Main.instance.updatesURL != Main.UPDATES_BASE_URL)
-            updater.setOverrideURLs(true)    // For testing.
+            updater.setOverrideURLs(true)    // For org.bitcoinj.testing.
 
         updater.progressProperty().addListener { obv ->
             if (state == UpdateState.CHECKING) {
