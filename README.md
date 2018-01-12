@@ -15,9 +15,9 @@ server running.  We hope to have this service up and running ASAP.
 
 This is project is now considered maintained again. However it was primarily updated as a proof of concept for it's main dependency
 [bitcoinj.cash](http://bitcoinj.cash) and as such no significant new development is currently planned beyond building a deploying a
-working lighthouse server.
-If you would like to contribute to the project please get in touch on the bitcoinj.cash [mailing list](https://groups.google.com/forum/#!forum/bitcoinj-cash)
+working lighthouse server and cleaning up the build process to make it seamless.
 
+If you would like to contribute to the project please get in touch on the bitcoinj.cash [mailing list](https://groups.google.com/forum/#!forum/bitcoinj-cash)
 
 # how to tweak the user interface
 
