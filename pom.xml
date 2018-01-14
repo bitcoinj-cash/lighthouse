@@ -53,7 +53,7 @@
         <dependency>
             <groupId>cash.bitcoinj</groupId>
             <artifactId>bitcoinj-core</artifactId>
-            <version>0.14.5</version>
+            <version>0.14.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
